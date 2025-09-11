@@ -1,6 +1,10 @@
 ## 🎥 Demo Video
 
-[![Watch the video] https://github.com/Hack-Vibe-2k25/Digital-Dynamos/blob/main/assets/WhatsApp%20Video%202025-09-12%20at%2004.15.36.mp4
+<video src="https://github.com/Hack-Vibe-2k25/Digital-Dynamos/blob/main/assets/WhatsApp%20Video%202025-09-12%20at%2004.15.36.mp4?raw=true" 
+       controls 
+       width="600">
+  Your browser does not support the video tag.
+</video>
 
 # Virtusphere
 
