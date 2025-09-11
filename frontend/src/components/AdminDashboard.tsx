@@ -224,268 +224,287 @@ export default function AdminDashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-xl font-semibold">Loading...</div>
+      <div className="min-h-screen bg-[#080B18] starfield flex items-center justify-center">
+        <div className="bg-gradient-to-br from-[#0F1426]/80 to-[#261A40]/60 backdrop-blur-xl rounded-3xl p-12 border border-[#8B5CF6]/20 glow-intense">
+          <div className="flex items-center gap-4">
+            <div className="w-8 h-8 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] rounded-full animate-spin">
+              <div className="w-6 h-6 bg-[#080B18] rounded-full m-1"></div>
+            </div>
+            <span className="text-xl font-semibold text-white">Initializing VirtuSphere Control Center...</span>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Event Management Dashboard</h1>
-        
-        {/* Enhanced Analytics Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    <div className="min-h-screen bg-[#080B18] starfield">
+      {/* Header Section */}
+      <div className="relative overflow-hidden">
+        {/* Animated Background Elements */}
+        <div className="absolute inset-0">
+          <div className="absolute top-10 left-10 w-72 h-72 bg-[#8B5CF6]/5 rounded-full blur-3xl animate-pulse-subtle" />
+          <div className="absolute top-40 right-20 w-96 h-96 bg-[#A78BFA]/3 rounded-full blur-3xl animate-pulse-subtle delay-1000" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
+          {/* Dashboard Title */}
+          <div className="mb-12">
+            <div className="flex items-center gap-4 mb-4">
+              <div className="w-12 h-12 bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] rounded-2xl flex items-center justify-center glow-primary">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Events</p>
-                <p className="text-2xl font-semibold text-gray-900">{analytics.totalEvents}</p>
+              <div>
+                <h1 className="text-4xl font-black text-white">VirtuSphere Control Center</h1>
+                <p className="text-gray-300 text-lg">Orchestrate the future of virtual experiences</p>
               </div>
             </div>
           </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
+          
+          {/* Enhanced Analytics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            {[
+              { 
+                icon: "📊", 
+                label: "Total Events", 
+                value: analytics.totalEvents, 
+                color: "from-[#8B5CF6] to-[#A78BFA]",
+                bgColor: "from-[#8B5CF6]/20 to-[#A78BFA]/10"
+              },
+              { 
+                icon: "👥", 
+                label: "Total Registrations", 
+                value: analytics.totalRegistrations, 
+                color: "from-emerald-500 to-teal-400",
+                bgColor: "from-emerald-500/20 to-teal-400/10"
+              },
+              { 
+                icon: "🚀", 
+                label: "Upcoming Events", 
+                value: analytics.upcomingEvents, 
+                color: "from-amber-500 to-orange-400",
+                bgColor: "from-amber-500/20 to-orange-400/10"
+              },
+              { 
+                icon: "✨", 
+                label: "Active Registrations", 
+                value: analytics.activeRegistrations, 
+                color: "from-purple-500 to-pink-400",
+                bgColor: "from-purple-500/20 to-pink-400/10"
+              }
+            ].map((stat, index) => (
+              <div key={index} className="group">
+                <div className={`bg-gradient-to-br ${stat.bgColor} backdrop-blur-xl rounded-2xl p-6 border border-[#233045]/50 hover:border-[#8B5CF6]/30 transition-all hover-lift glow-primary`}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`w-14 h-14 bg-gradient-to-br ${stat.color} rounded-2xl flex items-center justify-center text-2xl glow-primary group-hover:scale-110 transition-transform`}>
+                      {stat.icon}
+                    </div>
+                    <div className="text-3xl font-black text-white">{stat.value}</div>
+                  </div>
+                  <p className="text-gray-300 font-medium">{stat.label}</p>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Registrations</p>
-                <p className="text-2xl font-semibold text-gray-900">{analytics.totalRegistrations}</p>
-              </div>
-            </div>
+            ))}
           </div>
 
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <svg className="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Upcoming Events</p>
-                <p className="text-2xl font-semibold text-gray-900">{analytics.upcomingEvents}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Active Registrations</p>
-                <p className="text-2xl font-semibold text-gray-900">{analytics.activeRegistrations}</p>
-              </div>
+          {/* Tab Navigation */}
+          <div className="bg-gradient-to-r from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-2xl p-2 mb-8 border border-[#233045]/50">
+            <div className="flex space-x-2">
+              {[
+                { key: 'events', label: 'Events Control', icon: '🎯' },
+                { key: 'registrations', label: 'Registrations', icon: '📋' },
+                { key: 'analytics', label: 'Analytics', icon: '📈' }
+              ].map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key as any)}
+                  className={`flex items-center gap-3 flex-1 py-4 px-6 rounded-xl font-bold text-sm transition-all ${
+                    activeTab === tab.key
+                      ? 'bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] text-white shadow-lg glow-primary'
+                      : 'text-gray-300 hover:text-white hover:bg-[#233045]/30'
+                  }`}
+                >
+                  <span className="text-lg">{tab.icon}</span>
+                  {tab.label}
+                </button>
+              ))}
             </div>
           </div>
         </div>
-        
-        {/* Tab Navigation */}
-        <div className="flex space-x-1 bg-gray-200 rounded-lg p-1 mb-6">
-          <button
-            onClick={() => setActiveTab('events')}
-            className={`flex-1 py-2 px-4 rounded-md font-medium text-sm transition-colors ${
-              activeTab === 'events'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Events Management
-          </button>
-          <button
-            onClick={() => setActiveTab('registrations')}
-            className={`flex-1 py-2 px-4 rounded-md font-medium text-sm transition-colors ${
-              activeTab === 'registrations'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Registrations
-          </button>
-          <button
-            onClick={() => setActiveTab('analytics')}
-            className={`flex-1 py-2 px-4 rounded-md font-medium text-sm transition-colors ${
-              activeTab === 'analytics'
-                ? 'bg-white text-gray-900 shadow-sm'
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            Analytics
-          </button>
-        </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-6 pb-20">
         {activeTab === 'events' && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Enhanced Create/Edit Event Form */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-semibold">
-                  {editingEvent ? 'Edit Event' : 'Create New Event'}
-                </h2>
+            {/* Create/Edit Event Form */}
+            <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] rounded-xl flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                  </div>
+                  <h2 className="text-2xl font-bold text-white">
+                    {editingEvent ? 'Modify Experience' : 'Create Experience'}
+                  </h2>
+                </div>
                 {editingEvent && (
                   <button
                     onClick={resetForm}
-                    className="text-sm text-gray-600 hover:text-gray-800"
+                    className="px-4 py-2 bg-[#233045]/50 text-gray-300 rounded-xl border border-[#233045] hover:border-[#8B5CF6]/30 hover:text-white transition-all"
                   >
                     Cancel Edit
                   </button>
                 )}
               </div>
-              <form onSubmit={handleCreateOrUpdateEvent} className="space-y-4">
+
+              <form onSubmit={handleCreateOrUpdateEvent} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Event Title *
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Experience Title *
                   </label>
                   <input
                     type="text"
                     required
                     value={eventForm.title}
                     onChange={(e) => setEventForm({...eventForm, title: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="Enter immersive experience title"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
                     Subtitle
                   </label>
                   <input
                     type="text"
                     value={eventForm.subtitle}
                     onChange={(e) => setEventForm({...eventForm, subtitle: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Short tagline for your event"
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="Short compelling tagline"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Experience Description
                   </label>
                   <textarea
                     value={eventForm.description}
                     onChange={(e) => setEventForm({...eventForm, description: e.target.value})}
-                    rows={3}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Describe your event (supports markdown)"
+                    rows={4}
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="Describe the transformative journey participants will embark on..."
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Opportunity Type
+                    <label className="block text-sm font-bold text-gray-300 mb-2">
+                      Experience Type
                     </label>
                     <select
                       value={eventForm.opportunity_type}
                       onChange={(e) => setEventForm({...eventForm, opportunity_type: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
                     >
                       <option value="">Select Type</option>
-                      <option value="hackathon">Hackathon</option>
-                      <option value="contest">Contest</option>
-                      <option value="workshop">Workshop</option>
-                      <option value="conference">Conference</option>
-                      <option value="seminar">Seminar</option>
-                      <option value="networking">Networking</option>
+                      <option value="hackathon">Digital Hackathon</option>
+                      <option value="contest">AI Contest</option>
+                      <option value="workshop">Virtual Workshop</option>
+                      <option value="conference">Immersive Conference</option>
+                      <option value="seminar">Neural Seminar</option>
+                      <option value="networking">Quantum Networking</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Subtype
+                    <label className="block text-sm font-bold text-gray-300 mb-2">
+                      Specialization
                     </label>
                     <select
                       value={eventForm.opportunity_subtype}
                       onChange={(e) => setEventForm({...eventForm, opportunity_subtype: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
                     >
-                      <option value="">Select Subtype</option>
-                      <option value="coding">Coding</option>
-                      <option value="design">Design</option>
-                      <option value="business">Business</option>
-                      <option value="ai-ml">AI/ML</option>
-                      <option value="blockchain">Blockchain</option>
-                      <option value="iot">IoT</option>
-                      <option value="web-dev">Web Development</option>
-                      <option value="mobile-dev">Mobile Development</option>
+                      <option value="">Select Focus</option>
+                      <option value="coding">Neural Coding</option>
+                      <option value="design">Quantum Design</option>
+                      <option value="business">Digital Business</option>
+                      <option value="ai-ml">AI/ML Mastery</option>
+                      <option value="blockchain">Blockchain Reality</option>
+                      <option value="iot">IoT Integration</option>
+                      <option value="web-dev">Web Evolution</option>
+                      <option value="mobile-dev">Mobile Innovation</option>
                     </select>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Organization Name
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Host Organization
                   </label>
                   <input
                     type="text"
                     value={eventForm.organisation_name}
                     onChange={(e) => setEventForm({...eventForm, organisation_name: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="Enter organization name"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Website URL
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Portal URL
                   </label>
                   <input
                     type="url"
                     value={eventForm.website_url}
                     onChange={(e) => setEventForm({...eventForm, website_url: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com"
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="https://experience-portal.com"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Mode *
+                    <label className="block text-sm font-bold text-gray-300 mb-2">
+                      Reality Mode *
                     </label>
                     <select
                       value={eventForm.mode}
                       onChange={(e) => setEventForm({...eventForm, mode: e.target.value as 'online' | 'offline' | 'hybrid'})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
                     >
-                      <option value="online">Online</option>
-                      <option value="offline">Offline</option>
-                      <option value="hybrid">Hybrid</option>
+                      <option value="online">Virtual Reality</option>
+                      <option value="offline">Physical Space</option>
+                      <option value="hybrid">Hybrid Dimension</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-bold text-gray-300 mb-2">
                       Status
                     </label>
                     <select
                       value={eventForm.status}
                       onChange={(e) => setEventForm({...eventForm, status: e.target.value as 'active' | 'cancelled' | 'completed'})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
                     >
-                      <option value="active">Active</option>
-                      <option value="cancelled">Cancelled</option>
-                      <option value="completed">Completed</option>
+                      <option value="active">Active Portal</option>
+                      <option value="cancelled">Suspended</option>
+                      <option value="completed">Archived</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Price ($)
+                    <label className="block text-sm font-bold text-gray-300 mb-2">
+                      Access Cost ($)
                     </label>
                     <input
                       type="number"
@@ -493,53 +512,53 @@ export default function AdminDashboard() {
                       step="0.01"
                       value={eventForm.price}
                       onChange={(e) => setEventForm({...eventForm, price: parseFloat(e.target.value) || 0})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Categories (comma-separated)
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Experience Tags (comma-separated)
                   </label>
                   <input
                     type="text"
                     value={eventForm.categories.join(', ')}
                     onChange={(e) => handleArrayInput(e.target.value, 'categories')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Technology, Innovation, Startup"
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="AI, Innovation, Future Tech, Neural Networks"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Skills Assessed (comma-separated)
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Skills Enhancement (comma-separated)
                   </label>
                   <input
                     type="text"
                     value={eventForm.skills.join(', ')}
                     onChange={(e) => handleArrayInput(e.target.value, 'skills')}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="React, Node.js, Python, Design Thinking"
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="React, Neural Processing, Quantum Computing, Design Thinking"
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Event Date & Time
+                    <label className="block text-sm font-bold text-gray-300 mb-2">
+                      Experience Timeline
                     </label>
                     <input
                       type="datetime-local"
                       value={eventForm.event_date}
                       onChange={(e) => setEventForm({...eventForm, event_date: e.target.value})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
                     />
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Max Attendees *
+                    <label className="block text-sm font-bold text-gray-300 mb-2">
+                      Capacity Limit *
                     </label>
                     <input
                       type="number"
@@ -547,131 +566,160 @@ export default function AdminDashboard() {
                       required
                       value={eventForm.max_attendees}
                       onChange={(e) => setEventForm({...eventForm, max_attendees: parseInt(e.target.value)})}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
                     />
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Reality Coordinates
                   </label>
                   <input
                     type="text"
                     value={eventForm.location}
                     onChange={(e) => setEventForm({...eventForm, location: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Virtual/Physical address"
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="Virtual Space / Physical Address / Hybrid Coordinates"
                   />
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Image URL
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    Visual Portal URL
                   </label>
                   <input
                     type="url"
                     value={eventForm.image_url}
                     onChange={(e) => setEventForm({...eventForm, image_url: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="https://example.com/image.jpg"
+                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
+                    placeholder="https://cdn.virtusphere.com/experience-visual.jpg"
                   />
                 </div>
                 
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+                  className="w-full py-4 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] text-white font-bold rounded-2xl hover:shadow-2xl hover:shadow-[#8B5CF6]/25 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover-lift glow-intense"
                 >
                   {loading 
-                    ? 'Saving...' 
+                    ? 'Processing...' 
                     : editingEvent 
-                    ? 'Update Event' 
-                    : 'Create Event'
+                    ? 'Update Experience' 
+                    : 'Launch Experience'
                   }
                 </button>
               </form>
             </div>
 
-            {/* Enhanced Events List */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold mb-4">Existing Events</h2>
+            {/* Events List */}
+            <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 00-2 2m0 0V7a2 2 0 012-2h14a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <h2 className="text-2xl font-bold text-white">Active Experiences</h2>
+              </div>
+
               <div className="space-y-4 max-h-[600px] overflow-y-auto">
                 {events.map((event) => {
                   const eventRegistrations = getEventRegistrations(event.id);
                   const isUpcoming = event.event_date ? new Date(event.event_date) > new Date() : false;
                   
                   return (
-                    <div key={event.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <h3 className="font-semibold text-lg">{event.title}</h3>
+                    <div key={event.id} className="bg-[#233045]/20 backdrop-blur-sm rounded-2xl p-6 border border-[#233045] hover:border-[#8B5CF6]/30 transition-all hover-lift">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                          <h3 className="font-bold text-lg text-white mb-1">{event.title}</h3>
                           {event.subtitle && (
-                            <p className="text-sm text-gray-600 italic">{event.subtitle}</p>
+                            <p className="text-sm text-purple-300 italic mb-2">{event.subtitle}</p>
                           )}
                         </div>
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditEvent(event)}
-                            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                            className="px-4 py-2 bg-[#8B5CF6]/20 text-purple-300 rounded-xl border border-[#8B5CF6]/30 hover:bg-[#8B5CF6]/30 hover:text-white transition-all text-sm font-medium"
                           >
-                            Edit
+                            Modify
                           </button>
                           <button
                             onClick={() => handleDeleteEvent(event.id)}
-                            className="text-red-600 hover:text-red-800 text-sm font-medium"
+                            className="px-4 py-2 bg-red-500/20 text-red-300 rounded-xl border border-red-500/30 hover:bg-red-500/30 hover:text-white transition-all text-sm font-medium"
                           >
                             Delete
                           </button>
                         </div>
                       </div>
                       
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {event.description}
+                      <p className="text-gray-300 text-sm mb-4 line-clamp-2">
+                        {event.description || 'No description provided.'}
                       </p>
                       
-                      <div className="grid grid-cols-2 gap-4 text-xs text-gray-500 mb-3">
-                        <div>
-                          {event.event_date && <p>📅 {new Date(event.event_date).toLocaleDateString()}</p>}
-                          <p>📍 {event.location || 'TBD'}</p>
-                          {event.organisation_name && <p>🏢 {event.organisation_name}</p>}
+                      <div className="grid grid-cols-2 gap-4 text-xs text-gray-400 mb-4">
+                        <div className="space-y-1">
+                          {event.event_date && (
+                            <p className="flex items-center gap-2">
+                              <span>⏰</span> {new Date(event.event_date).toLocaleDateString()}
+                            </p>
+                          )}
+                          <p className="flex items-center gap-2">
+                            <span>📍</span> {event.location || 'Virtual Space'}
+                          </p>
+                          {event.organisation_name && (
+                            <p className="flex items-center gap-2">
+                              <span>🏢</span> {event.organisation_name}
+                            </p>
+                          )}
                         </div>
-                        <div>
-                          <p>👥 {eventRegistrations.length}/{event.max_attendees}</p>
-                          <p>💰 {event.price > 0 ? `$${event.price}` : 'Free'}</p>
-                          <p>🌐 {event.mode}</p>
+                        <div className="space-y-1">
+                          <p className="flex items-center gap-2">
+                            <span>👥</span> {eventRegistrations.length}/{event.max_attendees}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span>💎</span> {event.price > 0 ? `$${event.price}` : 'Free Access'}
+                          </p>
+                          <p className="flex items-center gap-2">
+                            <span>🌐</span> {event.mode}
+                          </p>
                         </div>
                       </div>
 
                       {/* Enhanced tags display */}
-                      <div className="flex flex-wrap gap-1 mb-3">
+                      <div className="flex flex-wrap gap-2 mb-4">
                         {event.opportunity_type && (
-                          <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                          <span className="px-3 py-1 bg-[#8B5CF6]/20 text-purple-300 text-xs rounded-full border border-[#8B5CF6]/30">
                             {event.opportunity_type}
                           </span>
                         )}
-                        {event.categories && event.categories.map((category, index) => (
-                          <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
+                        {event.categories && event.categories.slice(0, 3).map((category, index) => (
+                          <span key={index} className="px-3 py-1 bg-[#233045]/50 text-gray-300 text-xs rounded-full border border-[#233045]">
                             {category}
                           </span>
                         ))}
+                        {event.categories && event.categories.length > 3 && (
+                          <span className="px-3 py-1 bg-[#233045]/50 text-gray-400 text-xs rounded-full border border-[#233045]">
+                            +{event.categories.length - 3} more
+                          </span>
+                        )}
                       </div>
                       
                       <div className="flex items-center justify-between">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           isUpcoming 
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
                         }`}>
-                          {isUpcoming ? 'Upcoming' : 'Past'}
+                          {isUpcoming ? 'Future Launch' : 'Historical'}
                         </span>
                         
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           event.status === 'active'
-                            ? 'bg-blue-100 text-blue-800'
+                            ? 'bg-[#8B5CF6]/20 text-purple-300 border border-[#8B5CF6]/30'
                             : event.status === 'cancelled'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                         }`}>
                           {event.status}
                         </span>
@@ -681,8 +729,14 @@ export default function AdminDashboard() {
                 })}
                 
                 {events.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No events created yet.
+                  <div className="text-center py-12">
+                    <div className="w-20 h-20 bg-[#233045]/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </div>
+                    <p className="text-gray-400 text-lg">No experiences created yet.</p>
+                    <p className="text-gray-500 text-sm">Launch your first virtual experience to get started.</p>
                   </div>
                 )}
               </div>
@@ -691,56 +745,64 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'registrations' && (
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-xl font-semibold mb-4">Event Registrations</h2>
+          <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-400 rounded-xl flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white">Experience Registrations</h2>
+            </div>
+
             <div className="overflow-x-auto">
-              <table className="min-w-full table-auto">
+              <table className="min-w-full">
                 <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Event</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Name</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Type</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Phone</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
-                    <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
+                  <tr className="border-b border-[#233045]">
+                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Experience</th>
+                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Participant</th>
+                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Neural ID</th>
+                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Mode</th>
+                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Contact</th>
+                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Join Date</th>
+                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Status</th>
                   </tr>
                 </thead>
                 <tbody>
                   {registrations.map((registration) => (
-                    <tr key={registration.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-3 px-4 font-medium">
-                        {registration.events?.title || 'N/A'}
+                    <tr key={registration.id} className="border-b border-[#233045]/30 hover:bg-[#233045]/20 transition-colors">
+                      <td className="py-4 px-4 font-medium text-white">
+                        {registration.events?.title || 'Unknown Experience'}
                       </td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-4">
                         <div>
-                          <div>{registration.user_name}</div>
+                          <div className="text-white font-medium">{registration.user_name}</div>
                           {registration.team_name && (
-                            <div className="text-xs text-gray-500">Team: {registration.team_name}</div>
+                            <div className="text-xs text-purple-300">Collective: {registration.team_name}</div>
                           )}
                         </div>
                       </td>
-                      <td className="py-3 px-4">{registration.user_email}</td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      <td className="py-4 px-4 text-gray-300 text-sm">{registration.user_email}</td>
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           registration.participation_type === 'team' 
-                            ? 'bg-purple-100 text-purple-800'
-                            : 'bg-green-100 text-green-800'
+                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                         }`}>
-                          {registration.participation_type || 'individual'}
+                          {registration.participation_type === 'team' ? 'Collective' : 'Individual'}
                         </span>
                       </td>
-                      <td className="py-3 px-4">{registration.phone || 'N/A'}</td>
-                      <td className="py-3 px-4">
+                      <td className="py-4 px-4 text-gray-300 text-sm">{registration.phone || 'Neural Only'}</td>
+                      <td className="py-4 px-4 text-gray-300 text-sm">
                         {new Date(registration.registration_date).toLocaleDateString()}
                       </td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      <td className="py-4 px-4">
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                           registration.status === 'registered' 
-                            ? 'bg-green-100 text-green-800'
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                             : registration.status === 'cancelled'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-blue-100 text-blue-800'
+                            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
+                            : 'bg-[#8B5CF6]/20 text-purple-300 border border-[#8B5CF6]/30'
                         }`}>
                           {registration.status}
                         </span>
@@ -751,8 +813,14 @@ export default function AdminDashboard() {
               </table>
               
               {registrations.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No registrations found.
+                <div className="text-center py-12">
+                  <div className="w-20 h-20 bg-[#233045]/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                  <p className="text-gray-400 text-lg">No registrations detected.</p>
+                  <p className="text-gray-500 text-sm">Participants will appear here as they join experiences.</p>
                 </div>
               )}
             </div>
@@ -760,26 +828,42 @@ export default function AdminDashboard() {
         )}
 
         {activeTab === 'analytics' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Events by Type</h3>
-              <div className="space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] rounded-xl flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-white">Experience Categories</h3>
+              </div>
+              <div className="space-y-4">
                 {Object.entries(analytics.eventsByType).map(([type, count]) => (
-                  <div key={type} className="flex justify-between items-center">
-                    <span className="text-gray-600 capitalize">{type}</span>
-                    <span className="font-semibold">{count}</span>
+                  <div key={type} className="flex justify-between items-center p-4 bg-[#233045]/20 rounded-xl border border-[#233045]">
+                    <span className="text-gray-300 capitalize font-medium">{type}</span>
+                    <span className="font-bold text-white text-lg">{count}</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold mb-4">Events by Mode</h3>
-              <div className="space-y-3">
+            <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-white">Reality Modes</h3>
+              </div>
+              <div className="space-y-4">
                 {Object.entries(analytics.eventsByMode).map(([mode, count]) => (
-                  <div key={mode} className="flex justify-between items-center">
-                    <span className="text-gray-600 capitalize">{mode}</span>
-                    <span className="font-semibold">{count}</span>
+                  <div key={mode} className="flex justify-between items-center p-4 bg-[#233045]/20 rounded-xl border border-[#233045]">
+                    <span className="text-gray-300 capitalize font-medium">
+                      {mode === 'online' ? 'Virtual Reality' : mode === 'offline' ? 'Physical Space' : 'Hybrid Dimension'}
+                    </span>
+                    <span className="font-bold text-white text-lg">{count}</span>
                   </div>
                 ))}
               </div>
