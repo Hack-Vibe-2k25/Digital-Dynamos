@@ -1,8 +1,253 @@
-// components/AdminDashboard.tsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { supabase } from 'src/lib/supabase';
 import { Event, EventRegistration } from 'src/lib/types';
+import { nanoid } from 'nanoid';
+import Image from 'next/image';
+
+// Enhanced ImageUpload Component for VirtuSphere theme
+interface ImageUploadProps {
+  onImageUploaded?: (url: string) => void;
+  currentImageUrl?: string;
+  bucketName?: string;
+  className?: string;
+}
+
+function VirtuSphereImageUpload({ 
+  onImageUploaded, 
+  currentImageUrl = '',
+  bucketName = 'virtuesphere',
+  className = ''
+}: ImageUploadProps) {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [dragActive, setDragActive] = useState<boolean>(false);
+  const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = (file: File) => {
+    if (file && file.type.startsWith('image/')) {
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        alert('File size must be less than 10MB');
+        return;
+      }
+      setSelectedFile(file);
+      const preview = URL.createObjectURL(file);
+      setPreviewUrl(preview);
+      
+      // Auto-upload on selection for seamless UX
+      handleUpload(file);
+    } else {
+      alert('Please select a valid image file (PNG, JPG, GIF, WebP)');
+    }
+  };
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleFileSelect(file);
+  };
+
+  // Enhanced drag and drop handlers with visual feedback
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    if (files && files[0]) {
+      handleFileSelect(files[0]);
+    }
+  };
+
+  const handleUpload = async (file?: File) => {
+    const fileToUpload = file || selectedFile;
+    if (!fileToUpload) return;
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    try {
+      // Generate unique filename with timestamp and nanoid
+      const fileExt = fileToUpload.name.split('.').pop();
+      const fileName = `experience-visuals/${Date.now()}-${nanoid()}.${fileExt}`;
+
+      // Simulate upload progress for better UX
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval);
+            return 90;
+          }
+          return prev + Math.random() * 15;
+        });
+      }, 200);
+
+      // Upload to Supabase Storage
+      const { data, error } = await supabase.storage
+        .from(bucketName)
+        .upload(fileName, fileToUpload, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: urlData } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(data.path);
+
+      const publicUrl = urlData.publicUrl;
+      
+      // Clean up preview URL
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        setPreviewUrl('');
+      }
+
+      // Callback to parent component
+      onImageUploaded?.(publicUrl);
+      setSelectedFile(null);
+
+      // Success feedback
+      setTimeout(() => setUploadProgress(0), 2000);
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      console.error('Error uploading file:', errorMessage);
+      alert(`Upload failed: ${errorMessage}`);
+      setUploadProgress(0);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <div className={`w-full ${className}`}>
+      {/* Current Image Display */}
+      {currentImageUrl && !previewUrl && (
+        <div className="mb-4">
+          <div className="relative w-full h-40 bg-gradient-to-br from-[#233045]/20 to-[#261A40]/10 rounded-2xl overflow-hidden border border-[#233045]">
+            <Image
+              src={currentImageUrl}
+              alt="Current experience visual"
+              fill
+              style={{ objectFit: 'cover' }}
+              className="rounded-2xl"
+            />
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-emerald-500 to-teal-400 text-white px-3 py-1 rounded-full text-xs font-bold glow-primary">
+              ✓ Current Visual
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enhanced Drag & Drop Upload Area */}
+      <div
+        className={`relative border-2 border-dashed rounded-2xl p-8 transition-all cursor-pointer group
+          ${dragActive 
+            ? 'border-[#8B5CF6] bg-gradient-to-br from-[#8B5CF6]/20 to-[#A78BFA]/10 glow-primary scale-105' 
+            : isUploading
+            ? 'border-amber-400 bg-gradient-to-br from-amber-500/20 to-orange-400/10'
+            : 'border-[#233045] bg-gradient-to-br from-[#233045]/20 to-[#261A40]/10 hover:border-[#8B5CF6]/50 hover:bg-gradient-to-br hover:from-[#8B5CF6]/10 hover:to-[#A78BFA]/5'
+          }`}
+        onDragEnter={handleDrag}
+        onDragLeave={handleDrag}
+        onDragOver={handleDrag}
+        onDrop={handleDrop}
+        onClick={() => !isUploading && fileInputRef.current?.click()}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleInputChange}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          disabled={isUploading}
+        />
+        
+        <div className="text-center">
+          {isUploading ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-center">
+                <div className="relative w-16 h-16">
+                  <div className="absolute inset-0 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] rounded-full animate-spin">
+                    <div className="w-12 h-12 bg-[#080B18] rounded-full m-2"></div>
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xs font-bold text-white">{Math.round(uploadProgress)}%</span>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-white font-bold">Uploading Visual Portal...</p>
+                <div className="w-full bg-[#233045] rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] h-2 rounded-full transition-all glow-primary"
+                    style={{ width: `${uploadProgress}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] rounded-2xl flex items-center justify-center mx-auto glow-primary group-hover:scale-110 transition-transform">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-white font-bold text-lg">
+                  <span className="bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] bg-clip-text text-transparent">Upload Visual Portal</span>
+                </p>
+                <p className="text-gray-300 text-sm">
+                  Drag & drop your experience visual or click to browse
+                </p>
+                <p className="text-gray-400 text-xs">
+                  Supports PNG, JPG, GIF, WebP up to 10MB
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Preview Section */}
+      {previewUrl && (
+        <div className="mt-6">
+          <div className="relative w-full h-40 bg-gradient-to-br from-[#233045]/20 to-[#261A40]/10 rounded-2xl overflow-hidden border border-[#8B5CF6]/30 glow-primary">
+            <Image
+              src={previewUrl}
+              alt="Experience visual preview"
+              fill
+              style={{ objectFit: 'cover' }}
+              className="rounded-2xl"
+            />
+            <div className="absolute top-3 right-3 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] text-white px-3 py-1 rounded-full text-xs font-bold animate-pulse">
+              🚀 Processing...
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AdminDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -112,7 +357,7 @@ export default function AdminDashboard() {
         setEvents(events.map(event => 
           event.id === editingEvent.id ? data[0] : event
         ));
-        alert('Event updated successfully!');
+        alert('Experience updated successfully!');
       } else {
         // Create new event
         const { data, error } = await supabase
@@ -123,13 +368,13 @@ export default function AdminDashboard() {
         if (error) throw error;
         
         setEvents([data[0], ...events]);
-        alert('Event created successfully!');
+        alert('Experience launched successfully!');
       }
       
       resetForm();
     } catch (error) {
       console.error('Error saving event:', error);
-      alert('Error saving event');
+      alert('Error processing experience');
     } finally {
       setLoading(false);
     }
@@ -158,7 +403,7 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteEvent = async (eventId: string) => {
-    if (!confirm('Are you sure you want to delete this event? This will also delete all registrations.')) return;
+    if (!confirm('Are you sure you want to delete this experience? This will also delete all registrations.')) return;
     
     try {
       const { error } = await supabase
@@ -170,10 +415,10 @@ export default function AdminDashboard() {
       
       setEvents(events.filter(event => event.id !== eventId));
       setRegistrations(registrations.filter(reg => reg.event_id !== eventId));
-      alert('Event deleted successfully!');
+      alert('Experience deleted successfully!');
     } catch (error) {
       console.error('Error deleting event:', error);
-      alert('Error deleting event');
+      alert('Error deleting experience');
     }
   };
 
@@ -584,17 +829,22 @@ export default function AdminDashboard() {
                   />
                 </div>
                 
+                {/* Enhanced Image Upload Section */}
                 <div>
                   <label className="block text-sm font-bold text-gray-300 mb-2">
-                    Visual Portal URL
+                    Experience Visual Portal
                   </label>
-                  <input
-                    type="url"
-                    value={eventForm.image_url}
-                    onChange={(e) => setEventForm({...eventForm, image_url: e.target.value})}
-                    className="w-full px-4 py-3 bg-[#233045]/30 border border-[#233045] rounded-xl text-white placeholder-gray-400 focus:border-[#8B5CF6]/50 focus:outline-none focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all"
-                    placeholder="https://cdn.virtusphere.com/experience-visual.jpg"
+                  <VirtuSphereImageUpload
+                    currentImageUrl={eventForm.image_url}
+                    onImageUploaded={(url) => setEventForm({...eventForm, image_url: url})}
+                    bucketName="virtuesphere"
+                    className="mb-2"
                   />
+                  {eventForm.image_url && (
+                    <p className="text-xs text-gray-400 mt-2 p-3 bg-[#233045]/20 rounded-xl border border-[#233045]">
+                      <span className="text-purple-300 font-medium">Current Portal:</span> {eventForm.image_url.substring(0, 80)}...
+                    </p>
+                  )}
                 </div>
                 
                 <button
@@ -630,13 +880,35 @@ export default function AdminDashboard() {
                   
                   return (
                     <div key={event.id} className="bg-[#233045]/20 backdrop-blur-sm rounded-2xl p-6 border border-[#233045] hover:border-[#8B5CF6]/30 transition-all hover-lift">
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-bold text-lg text-white mb-1">{event.title}</h3>
-                          {event.subtitle && (
-                            <p className="text-sm text-purple-300 italic mb-2">{event.subtitle}</p>
-                          )}
+                      {/* Enhanced Event Image Display */}
+                      {event.image_url && (
+                        <div className="relative w-full h-40 mb-4 bg-gradient-to-br from-[#233045]/20 to-[#261A40]/10 rounded-2xl overflow-hidden border border-[#233045]">
+                          <Image
+                            src={event.image_url}
+                            alt={event.title}
+                            fill
+                            style={{ objectFit: 'cover' }}
+                            className="rounded-2xl"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                          <div className="absolute bottom-3 left-3 right-3">
+                            <h3 className="font-bold text-lg text-white mb-1 drop-shadow-lg">{event.title}</h3>
+                            {event.subtitle && (
+                              <p className="text-sm text-purple-200 italic drop-shadow-md">{event.subtitle}</p>
+                            )}
+                          </div>
                         </div>
+                      )}
+                      
+                      <div className="flex justify-between items-start mb-4">
+                        {!event.image_url && (
+                          <div className="flex-1">
+                            <h3 className="font-bold text-lg text-white mb-1">{event.title}</h3>
+                            {event.subtitle && (
+                              <p className="text-sm text-purple-300 italic mb-2">{event.subtitle}</p>
+                            )}
+                          </div>
+                        )}
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleEditEvent(event)}
