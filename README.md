@@ -1,3 +1,7 @@
+## 🎥 Demo Video
+
+[![Watch the video] https://github.com/Hack-Vibe-2k25/Digital-Dynamos/blob/main/assets/WhatsApp%20Video%202025-09-12%20at%2004.15.36.mp4
+
 # Virtusphere
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
