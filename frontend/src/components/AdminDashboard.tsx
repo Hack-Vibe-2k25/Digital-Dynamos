@@ -249,6 +249,197 @@ function VirtuSphereImageUpload({
   );
 }
 
+// New Avatar Creator Component
+interface AvatarCreatorProps {
+  onAvatarSelected?: (avatarUrl: string) => void;
+  currentAvatarUrl?: string;
+  className?: string;
+}
+
+function VirtuSphereAvatarCreator({ 
+  onAvatarSelected, 
+  currentAvatarUrl = '',
+  className = ''
+}: AvatarCreatorProps) {
+  const [isAvatarCreatorOpen, setIsAvatarCreatorOpen] = useState(false);
+  const [selectedAvatarUrl, setSelectedAvatarUrl] = useState(currentAvatarUrl);
+  const [isLoading, setIsLoading] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  
+  // FIXED: Your ReadyPlayer.me subdomain configuration
+  const subdomain = 'https://personal-0pchm8.readyplayer.me/avatar'; // Replace with your actual ReadyPlayer.me subdomain
+  const iframeSrc = `https://${subdomain}.readyplayer.me/avatar?frameApi`;
+  
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      try {
+        const json = JSON.parse(event.data);
+        
+        if (json?.source !== 'readyplayerme') {
+          return;
+        }
+
+        // Subscribe to all events once frame is ready
+        if (json.eventName === 'v1.frame.ready') {
+          if (iframeRef.current?.contentWindow) {
+            iframeRef.current.contentWindow.postMessage(
+              JSON.stringify({
+                target: 'readyplayerme',
+                type: 'subscribe',
+                eventName: 'v1.**'
+              }),
+              '*'
+            );
+          }
+        }
+
+        // Handle avatar export
+        if (json.eventName === 'v1.avatar.exported') {
+          const avatarUrl = json.data.url;
+          console.log('Avatar URL received:', avatarUrl);
+          
+          setSelectedAvatarUrl(avatarUrl);
+          setIsAvatarCreatorOpen(false);
+          setIsLoading(false);
+          
+          // Callback to parent component
+          onAvatarSelected?.(avatarUrl);
+        }
+
+        // Handle user events
+        if (json.eventName === 'v1.user.set') {
+          console.log(`User with id ${json.data.id} set:`, json);
+        }
+        
+      } catch (error) {
+        // Ignore non-JSON messages
+        return;
+      }
+    };
+
+    // FIXED: Only add message listener to window
+    window.addEventListener('message', handleMessage);
+
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [onAvatarSelected]);
+
+  const openAvatarCreator = () => {
+    setIsAvatarCreatorOpen(true);
+    setIsLoading(true);
+  };
+
+  const closeAvatarCreator = () => {
+    setIsAvatarCreatorOpen(false);
+    setIsLoading(false);
+  };
+
+  return (
+    <div className={`w-full ${className}`}>
+      {/* Current Avatar Display */}
+      {selectedAvatarUrl && !isAvatarCreatorOpen && (
+        <div className="mb-4">
+          <div className="bg-gradient-to-br from-[#233045]/20 to-[#261A40]/10 rounded-2xl p-6 border border-[#233045] text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] rounded-2xl flex items-center justify-center mx-auto mb-4 glow-primary">
+              <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <p className="text-white font-bold mb-2">AI Avatar Ready</p>
+            <p className="text-gray-300 text-sm mb-4">3D avatar configured for neural interactions</p>
+            <div className="flex gap-2 justify-center">
+              <span className="px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-400 text-white text-xs rounded-full font-bold glow-primary">
+                ✓ Active
+              </span>
+              <button
+                onClick={openAvatarCreator}
+                className="px-4 py-1 bg-[#8B5CF6]/20 text-purple-300 text-xs rounded-full border border-[#8B5CF6]/30 hover:bg-[#8B5CF6]/30 hover:text-white transition-all font-medium"
+              >
+                Modify Avatar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Avatar Creator Button */}
+      {!selectedAvatarUrl && !isAvatarCreatorOpen && (
+        <button
+          onClick={openAvatarCreator}
+          className="w-full border-2 border-dashed border-[#233045] bg-gradient-to-br from-[#233045]/20 to-[#261A40]/10 hover:border-[#8B5CF6]/50 hover:bg-gradient-to-br hover:from-[#8B5CF6]/10 hover:to-[#A78BFA]/5 rounded-2xl p-8 transition-all cursor-pointer group hover-lift"
+        >
+          <div className="text-center">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] rounded-2xl flex items-center justify-center mx-auto mb-4 glow-primary group-hover:scale-110 transition-transform">
+              <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+            <p className="text-white font-bold text-lg mb-2">
+              <span className="bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] bg-clip-text text-transparent">Create AI Avatar</span>
+            </p>
+            <p className="text-gray-300 text-sm">
+              Launch Ready Player Me avatar creator for neural interface
+            </p>
+          </div>
+        </button>
+      )}
+
+      {/* Avatar Creator Modal */}
+      {isAvatarCreatorOpen && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-lg flex items-center justify-center z-[60] p-6">
+          <div className="bg-gradient-to-br from-[#0F1426]/90 to-[#261A40]/80 backdrop-blur-xl rounded-3xl shadow-2xl border border-[#8B5CF6]/20 w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden glow-intense">
+            {/* Modal Header */}
+            <div className="bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] text-white p-6 flex justify-between items-center">
+              <div className="flex items-center space-x-4">
+                <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-xl font-black">VirtuSphere Avatar Creator</h3>
+                  <p className="text-sm opacity-90 font-medium">Design your neural interface representation</p>
+                </div>
+              </div>
+              <button
+                onClick={closeAvatarCreator}
+                className="text-white hover:text-gray-200 hover:bg-white/10 w-10 h-10 rounded-2xl flex items-center justify-center transition-all duration-300 hover:scale-110"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Loading State */}
+            {isLoading && (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="w-16 h-16 bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] rounded-full animate-spin mx-auto mb-4">
+                    <div className="w-12 h-12 bg-[#080B18] rounded-full m-2"></div>
+                  </div>
+                  <p className="text-white font-bold text-lg">Initializing Avatar Creator...</p>
+                  <p className="text-gray-300 text-sm">Neural interface synchronizing</p>
+                </div>
+              </div>
+            )}
+
+            {/* Avatar Creator iFrame */}
+            <iframe
+              ref={iframeRef}
+              src={iframeSrc}
+              className="flex-1 w-full border-0 bg-white"
+              allow="camera *; microphone *; clipboard-write"
+              onLoad={() => setIsLoading(false)}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [events, setEvents] = useState<Event[]>([]);
   const [registrations, setRegistrations] = useState<EventRegistration[]>([]);
@@ -256,7 +447,7 @@ export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<'events' | 'registrations' | 'analytics'>('events');
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
 
-  // Enhanced event form state with new schema fields
+  // Enhanced event form state with new schema fields including avatar_url
   const [eventForm, setEventForm] = useState({
     title: '',
     subtitle: '',
@@ -272,6 +463,7 @@ export default function AdminDashboard() {
     location: '',
     max_attendees: 50,
     image_url: '',
+    avatar_url: '', // New field for avatar
     price: 0,
     status: 'active' as 'active' | 'cancelled' | 'completed'
   });
@@ -330,6 +522,7 @@ export default function AdminDashboard() {
       location: '',
       max_attendees: 50,
       image_url: '',
+      avatar_url: '', // Reset avatar URL
       price: 0,
       status: 'active'
     });
@@ -396,6 +589,7 @@ export default function AdminDashboard() {
       location: event.location || '',
       max_attendees: event.max_attendees,
       image_url: event.image_url || '',
+      avatar_url: event.avatar_url || '', // Include avatar URL
       price: event.price,
       status: event.status
     });
@@ -846,6 +1040,23 @@ export default function AdminDashboard() {
                     </p>
                   )}
                 </div>
+
+                {/* Avatar Creator Section */}
+                <div>
+                  <label className="block text-sm font-bold text-gray-300 mb-2">
+                    AI Avatar Interface
+                  </label>
+                  <VirtuSphereAvatarCreator
+                    currentAvatarUrl={eventForm.avatar_url}
+                    onAvatarSelected={(url) => setEventForm({...eventForm, avatar_url: url})}
+                    className="mb-2"
+                  />
+                  {eventForm.avatar_url && (
+                    <p className="text-xs text-gray-400 mt-2 p-3 bg-[#233045]/20 rounded-xl border border-[#233045]">
+                      <span className="text-purple-300 font-medium">Avatar Portal:</span> {eventForm.avatar_url.substring(0, 80)}...
+                    </p>
+                  )}
+                </div>
                 
                 <button
                   type="submit"
@@ -867,149 +1078,148 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 00-2 2m0 0V7a2 2 0 012-2h14a2 2 0 012 2v2M7 7h10" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                   </svg>
                 </div>
                 <h2 className="text-2xl font-bold text-white">Active Experiences</h2>
               </div>
 
-              <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                {events.map((event) => {
-                  const eventRegistrations = getEventRegistrations(event.id);
-                  const isUpcoming = event.event_date ? new Date(event.event_date) > new Date() : false;
-                  
-                  return (
-                    <div key={event.id} className="bg-[#233045]/20 backdrop-blur-sm rounded-2xl p-6 border border-[#233045] hover:border-[#8B5CF6]/30 transition-all hover-lift">
-                      {/* Enhanced Event Image Display */}
-                      {event.image_url && (
-                        <div className="relative w-full h-40 mb-4 bg-gradient-to-br from-[#233045]/20 to-[#261A40]/10 rounded-2xl overflow-hidden border border-[#233045]">
-                          <Image
-                            src={event.image_url}
-                            alt={event.title}
-                            fill
-                            style={{ objectFit: 'cover' }}
-                            className="rounded-2xl"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                          <div className="absolute bottom-3 left-3 right-3">
-                            <h3 className="font-bold text-lg text-white mb-1 drop-shadow-lg">{event.title}</h3>
-                            {event.subtitle && (
-                              <p className="text-sm text-purple-200 italic drop-shadow-md">{event.subtitle}</p>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      
-                      <div className="flex justify-between items-start mb-4">
-                        {!event.image_url && (
-                          <div className="flex-1">
-                            <h3 className="font-bold text-lg text-white mb-1">{event.title}</h3>
-                            {event.subtitle && (
-                              <p className="text-sm text-purple-300 italic mb-2">{event.subtitle}</p>
-                            )}
-                          </div>
-                        )}
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => handleEditEvent(event)}
-                            className="px-4 py-2 bg-[#8B5CF6]/20 text-purple-300 rounded-xl border border-[#8B5CF6]/30 hover:bg-[#8B5CF6]/30 hover:text-white transition-all text-sm font-medium"
-                          >
-                            Modify
-                          </button>
-                          <button
-                            onClick={() => handleDeleteEvent(event.id)}
-                            className="px-4 py-2 bg-red-500/20 text-red-300 rounded-xl border border-red-500/30 hover:bg-red-500/30 hover:text-white transition-all text-sm font-medium"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <p className="text-gray-300 text-sm mb-4 line-clamp-2">
-                        {event.description || 'No description provided.'}
-                      </p>
-                      
-                      <div className="grid grid-cols-2 gap-4 text-xs text-gray-400 mb-4">
-                        <div className="space-y-1">
-                          {event.event_date && (
-                            <p className="flex items-center gap-2">
-                              <span>⏰</span> {new Date(event.event_date).toLocaleDateString()}
-                            </p>
-                          )}
-                          <p className="flex items-center gap-2">
-                            <span>📍</span> {event.location || 'Virtual Space'}
-                          </p>
-                          {event.organisation_name && (
-                            <p className="flex items-center gap-2">
-                              <span>🏢</span> {event.organisation_name}
-                            </p>
-                          )}
-                        </div>
-                        <div className="space-y-1">
-                          <p className="flex items-center gap-2">
-                            <span>👥</span> {eventRegistrations.length}/{event.max_attendees}
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <span>💎</span> {event.price > 0 ? `$${event.price}` : 'Free Access'}
-                          </p>
-                          <p className="flex items-center gap-2">
-                            <span>🌐</span> {event.mode}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Enhanced tags display */}
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {event.opportunity_type && (
-                          <span className="px-3 py-1 bg-[#8B5CF6]/20 text-purple-300 text-xs rounded-full border border-[#8B5CF6]/30">
-                            {event.opportunity_type}
-                          </span>
-                        )}
-                        {event.categories && event.categories.slice(0, 3).map((category, index) => (
-                          <span key={index} className="px-3 py-1 bg-[#233045]/50 text-gray-300 text-xs rounded-full border border-[#233045]">
-                            {category}
-                          </span>
-                        ))}
-                        {event.categories && event.categories.length > 3 && (
-                          <span className="px-3 py-1 bg-[#233045]/50 text-gray-400 text-xs rounded-full border border-[#233045]">
-                            +{event.categories.length - 3} more
-                          </span>
-                        )}
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          isUpcoming 
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                            : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
-                        }`}>
-                          {isUpcoming ? 'Future Launch' : 'Historical'}
-                        </span>
-                        
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          event.status === 'active'
-                            ? 'bg-[#8B5CF6]/20 text-purple-300 border border-[#8B5CF6]/30'
-                            : event.status === 'cancelled'
-                            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                        }`}>
-                          {event.status}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
-                
-                {events.length === 0 && (
-                  <div className="text-center py-12">
-                    <div className="w-20 h-20 bg-[#233045]/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              <div className="space-y-4 max-h-96 overflow-y-auto">
+                {events.length === 0 ? (
+                  <div className="text-center py-8">
+                    <div className="w-16 h-16 bg-gradient-to-br from-[#233045]/50 to-[#261A40]/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
                     </div>
-                    <p className="text-gray-400 text-lg">No experiences created yet.</p>
-                    <p className="text-gray-500 text-sm">Launch your first virtual experience to get started.</p>
+                    <p className="text-gray-400 text-lg">No experiences created yet</p>
+                    <p className="text-gray-500 text-sm">Create your first virtual experience to get started</p>
                   </div>
+                ) : (
+                  events.map((event) => {
+                    const eventRegs = getEventRegistrations(event.id);
+                    const isUpcoming = event.event_date && new Date(event.event_date) > new Date();
+                    
+                    return (
+                      <div key={event.id} className="bg-gradient-to-br from-[#233045]/30 to-[#261A40]/20 rounded-2xl p-6 border border-[#233045] hover:border-[#8B5CF6]/30 transition-all group hover-lift">
+                        <div className="flex justify-between items-start mb-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h3 className="text-lg font-bold text-white group-hover:text-purple-300 transition-colors">
+                                {event.title}
+                              </h3>
+                              <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                                event.status === 'active' 
+                                  ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-white glow-primary'
+                                  : event.status === 'completed'
+                                  ? 'bg-gradient-to-r from-gray-500 to-gray-600 text-white'
+                                  : 'bg-gradient-to-r from-red-500 to-red-600 text-white'
+                              }`}>
+                                {event.status === 'active' ? '✓ Active' : 
+                                 event.status === 'completed' ? '📋 Completed' : '⚠ Suspended'}
+                              </span>
+                              {isUpcoming && (
+                                <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-400 text-white rounded-full text-xs font-bold glow-primary animate-pulse">
+                                  🚀 Upcoming
+                                </span>
+                              )}
+                            </div>
+                            {event.subtitle && (
+                              <p className="text-gray-300 text-sm mb-2">{event.subtitle}</p>
+                            )}
+                            <div className="flex items-center gap-4 text-xs text-gray-400 mb-3">
+                              <span className="flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                {event.mode || 'Virtual'}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z" />
+                                </svg>
+                                {eventRegs.length}/{event.max_attendees} registered
+                              </span>
+                              {event.price > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                                  </svg>
+                                  ${event.price}
+                                </span>
+                              )}
+                            </div>
+                            {event.event_date && (
+                              <p className="text-purple-300 text-sm font-medium">
+                                📅 {new Date(event.event_date).toLocaleDateString()} at {new Date(event.event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                              </p>
+                            )}
+                          </div>
+                          
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEditEvent(event)}
+                              className="px-3 py-2 bg-[#8B5CF6]/20 text-purple-300 rounded-xl border border-[#8B5CF6]/30 hover:bg-[#8B5CF6]/30 hover:text-white transition-all text-xs font-medium"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEvent(event.id)}
+                              className="px-3 py-2 bg-red-500/20 text-red-300 rounded-xl border border-red-500/30 hover:bg-red-500/30 hover:text-white transition-all text-xs font-medium"
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Tags and Skills */}
+                        <div className="space-y-3">
+                          {(event.categories && event.categories.length > 0) && (
+                            <div>
+                              <p className="text-xs text-gray-400 mb-1">Experience Tags:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {event.categories.map((category, idx) => (
+                                  <span key={idx} className="px-2 py-1 bg-[#8B5CF6]/20 text-purple-300 text-xs rounded-lg border border-[#8B5CF6]/20">
+                                    {category}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {(event.skills && event.skills.length > 0) && (
+                            <div>
+                              <p className="text-xs text-gray-400 mb-1">Skills Enhancement:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {event.skills.map((skill, idx) => (
+                                  <span key={idx} className="px-2 py-1 bg-emerald-500/20 text-emerald-300 text-xs rounded-lg border border-emerald-500/20">
+                                    {skill}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Registration Progress Bar */}
+                        {eventRegs.length > 0 && (
+                          <div className="mt-4">
+                            <div className="flex justify-between text-xs text-gray-400 mb-1">
+                              <span>Registration Progress</span>
+                              <span>{Math.round((eventRegs.length / event.max_attendees) * 100)}% filled</span>
+                            </div>
+                            <div className="w-full bg-[#233045] rounded-full h-2">
+                              <div 
+                                className="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full transition-all glow-primary"
+                                style={{ width: `${(eventRegs.length / event.max_attendees) * 100}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
@@ -1018,126 +1228,178 @@ export default function AdminDashboard() {
 
         {activeTab === 'registrations' && (
           <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-400 rounded-xl flex items-center justify-center">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center">
                 <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                 </svg>
               </div>
-              <h2 className="text-2xl font-bold text-white">Experience Registrations</h2>
+              <h2 className="text-2xl font-bold text-white">Neural Interface Registrations</h2>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full">
-                <thead>
-                  <tr className="border-b border-[#233045]">
-                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Experience</th>
-                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Participant</th>
-                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Neural ID</th>
-                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Mode</th>
-                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Contact</th>
-                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Join Date</th>
-                    <th className="text-left py-4 px-4 font-bold text-gray-300 text-sm">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {registrations.map((registration) => (
-                    <tr key={registration.id} className="border-b border-[#233045]/30 hover:bg-[#233045]/20 transition-colors">
-                      <td className="py-4 px-4 font-medium text-white">
-                        {registration.events?.title || 'Unknown Experience'}
-                      </td>
-                      <td className="py-4 px-4">
-                        <div>
-                          <div className="text-white font-medium">{registration.user_name}</div>
-                          {registration.team_name && (
-                            <div className="text-xs text-purple-300">Collective: {registration.team_name}</div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-gray-300 text-sm">{registration.user_email}</td>
-                      <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          registration.participation_type === 'team' 
-                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
-                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                        }`}>
-                          {registration.participation_type === 'team' ? 'Collective' : 'Individual'}
-                        </span>
-                      </td>
-                      <td className="py-4 px-4 text-gray-300 text-sm">{registration.phone || 'Neural Only'}</td>
-                      <td className="py-4 px-4 text-gray-300 text-sm">
-                        {new Date(registration.registration_date).toLocaleDateString()}
-                      </td>
-                      <td className="py-4 px-4">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          registration.status === 'registered' 
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                            : registration.status === 'cancelled'
-                            ? 'bg-red-500/20 text-red-300 border border-red-500/30'
-                            : 'bg-[#8B5CF6]/20 text-purple-300 border border-[#8B5CF6]/30'
-                        }`}>
-                          {registration.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              
-              {registrations.length === 0 && (
-                <div className="text-center py-12">
-                  <div className="w-20 h-20 bg-[#233045]/50 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {registrations.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#233045]/50 to-[#261A40]/30 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
                     </svg>
                   </div>
-                  <p className="text-gray-400 text-lg">No registrations detected.</p>
-                  <p className="text-gray-500 text-sm">Participants will appear here as they join experiences.</p>
+                  <p className="text-gray-400 text-lg">No registrations yet</p>
+                  <p className="text-gray-500 text-sm">Participants will appear here once they join experiences</p>
                 </div>
+              ) : (
+                registrations.map((registration) => (
+                  <div key={registration.id} className="bg-gradient-to-br from-[#233045]/30 to-[#261A40]/20 rounded-2xl p-6 border border-[#233045] hover:border-[#8B5CF6]/30 transition-all">
+                    <div className="flex justify-between items-start mb-3">
+                      <div>
+                        <h3 className="text-lg font-bold text-white mb-1">{registration.user_name}</h3>
+                        <p className="text-purple-300 text-sm font-medium">
+                          {registration.events?.title || 'Experience not found'}
+                        </p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        registration.status === 'registered' 
+                          ? 'bg-gradient-to-r from-emerald-500 to-teal-400 text-white glow-primary'
+                          : registration.status === 'attended'
+                          ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white'
+                          : 'bg-gradient-to-r from-red-500 to-red-600 text-white'
+                      }`}>
+                        {registration.status === 'registered' ? '✓ Registered' : 
+                         registration.status === 'attended' ? '🎯 Attended' : '❌ Cancelled'}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-gray-400">
+                      <span className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                        </svg>
+                        {registration.user_email}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 8h0m-3-3h6m-3 0h0m-3 0h0" />
+                        </svg>
+                        {new Date(registration.registration_date).toLocaleDateString()}
+                      </span>
+                      {registration.events?.event_date && (
+                        <span className="flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3a4 4 0 118 0v4m-4 8h0m-3-3h6m-3 0h0m-3 0h0" />
+                          </svg>
+                          Event: {new Date(registration.events.event_date).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>
         )}
 
         {activeTab === 'analytics' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] rounded-xl flex items-center justify-center">
-                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-bold text-white">Experience Categories</h3>
-              </div>
-              <div className="space-y-4">
-                {Object.entries(analytics.eventsByType).map(([type, count]) => (
-                  <div key={type} className="flex justify-between items-center p-4 bg-[#233045]/20 rounded-xl border border-[#233045]">
-                    <span className="text-gray-300 capitalize font-medium">{type}</span>
-                    <span className="font-bold text-white text-lg">{count}</span>
+          <div className="space-y-8">
+            {/* Analytics Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Event Types Distribution */}
+              <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#8B5CF6] to-[#A78BFA] rounded-xl flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
                   </div>
-                ))}
+                  <h3 className="text-xl font-bold text-white">Experience Types</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  {Object.entries(analytics.eventsByType).map(([type, count]) => (
+                    <div key={type} className="flex items-center justify-between">
+                      <span className="text-gray-300 capitalize">{type}</span>
+                      <div className="flex items-center gap-3">
+                        <div className="w-32 bg-[#233045] rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-[#8B5CF6] to-[#A78BFA] h-2 rounded-full transition-all glow-primary"
+                            style={{ width: `${(count / analytics.totalEvents) * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-white font-bold text-sm w-8 text-right">{count}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Reality Mode Distribution */}
+              <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-white">Reality Modes</h3>
+                </div>
+                
+                <div className="space-y-4">
+                  {Object.entries(analytics.eventsByMode).map(([mode, count]) => {
+                    const modeLabels = {
+                      online: 'Virtual Reality',
+                      offline: 'Physical Space', 
+                      hybrid: 'Hybrid Dimension'
+                    };
+                    return (
+                      <div key={mode} className="flex items-center justify-between">
+                        <span className="text-gray-300">{modeLabels[mode as keyof typeof modeLabels] || mode}</span>
+                        <div className="flex items-center gap-3">
+                          <div className="w-32 bg-[#233045] rounded-full h-2">
+                            <div 
+                              className="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full transition-all glow-primary"
+                              style={{ width: `${(count / analytics.totalEvents) * 100}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-white font-bold text-sm w-8 text-right">{count}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
+            {/* Recent Activity */}
             <div className="bg-gradient-to-br from-[#0F1426]/60 to-[#261A40]/40 backdrop-blur-xl rounded-3xl p-8 border border-[#233045]/50 glow-primary">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-400 rounded-xl flex items-center justify-center">
+                <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-400 rounded-xl flex items-center justify-center">
                   <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                   </svg>
                 </div>
-                <h3 className="text-xl font-bold text-white">Reality Modes</h3>
+                <h3 className="text-xl font-bold text-white">Recent Neural Activity</h3>
               </div>
-              <div className="space-y-4">
-                {Object.entries(analytics.eventsByMode).map(([mode, count]) => (
-                  <div key={mode} className="flex justify-between items-center p-4 bg-[#233045]/20 rounded-xl border border-[#233045]">
-                    <span className="text-gray-300 capitalize font-medium">
-                      {mode === 'online' ? 'Virtual Reality' : mode === 'offline' ? 'Physical Space' : 'Hybrid Dimension'}
-                    </span>
-                    <span className="font-bold text-white text-lg">{count}</span>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-br from-[#233045]/30 to-[#261A40]/20 rounded-2xl p-6 border border-[#233045]">
+                  <div className="text-center">
+                    <div className="text-3xl font-black text-white mb-2">{events.filter(e => e.status === 'active').length}</div>
+                    <p className="text-gray-300 font-medium">Active Portals</p>
                   </div>
-                ))}
+                </div>
+                <div className="bg-gradient-to-br from-[#233045]/30 to-[#261A40]/20 rounded-2xl p-6 border border-[#233045]">
+                  <div className="text-center">
+                    <div className="text-3xl font-black text-white mb-2">{registrations.filter(r => r.status === 'registered').length}</div>
+                    <p className="text-gray-300 font-medium">Pending Connections</p>
+                  </div>
+                </div>
+                <div className="bg-gradient-to-br from-[#233045]/30 to-[#261A40]/20 rounded-2xl p-6 border border-[#233045]">
+                  <div className="text-center">
+                    <div className="text-3xl font-black text-white mb-2">
+                      {events.reduce((total, event) => total + getEventRegistrations(event.id).length, 0)}
+                    </div>
+                    <p className="text-gray-300 font-medium">Total Neural Links</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

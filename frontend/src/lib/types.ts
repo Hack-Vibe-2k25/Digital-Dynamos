@@ -8,17 +8,18 @@ export interface Event {
   opportunity_subtype?: string;
   organisation_name?: string;
   website_url?: string;
-  mode: 'online' | 'offline' | 'hybrid';
+  mode?: 'online' | 'offline' | 'hybrid';
   categories?: string[];
   skills?: string[];
   event_date?: string;
   location?: string;
   max_attendees: number;
   image_url?: string;
+  avatar_url?: string; // NEW: ReadyPlayer.me avatar URL
   price: number;
   status: 'active' | 'cancelled' | 'completed';
-  created_at: string;
-  updated_at: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface EventStage {

@@ -345,12 +345,22 @@ export default function EventChatbot({ event, onClose, embedded = false }: Event
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [isOpen, setIsOpen] = useState(embedded);
+  
+  // Use avatar from event data or fallback to default
   const [avatarUrl, setAvatarUrl] = useState(
-    "https://models.readyplayer.me/64e3055495439dfcf3f0b665.glb"
+    event.avatar_url || "https://models.readyplayer.me/64e3055495439dfcf3f0b665.glb"
   );
+  
   const [currentSpeech, setCurrentSpeech] = useState<{ text: string; emotions: string[] } | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const sessionId = useRef(Math.random().toString(36).substring(7));
+
+  // Update avatar when event changes
+  useEffect(() => {
+    if (event.avatar_url && event.avatar_url !== avatarUrl) {
+      setAvatarUrl(event.avatar_url);
+    }
+  }, [event.avatar_url, avatarUrl]);
 
   useEffect(() => {
     if (isOpen) {
@@ -506,7 +516,9 @@ Category: ${categories}`;
             <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
             <div>
               <h4 className="text-white font-bold text-sm">AI Avatar Active</h4>
-              <p className="text-gray-300 text-xs">Neural interface synchronized</p>
+              <p className="text-gray-300 text-xs">
+                {event.avatar_url ? "Custom avatar loaded" : "Default avatar active"}
+              </p>
             </div>
           </div>
         </div>
@@ -541,6 +553,11 @@ Category: ${categories}`;
                 <span className="text-emerald-300">Ready</span>
               </div>
             </div>
+            {event.avatar_url && (
+              <div className="mt-2 text-xs text-purple-300 truncate">
+                Avatar: {event.avatar_url.split('/').pop()?.split('.')[0]}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -656,6 +673,9 @@ Category: ${categories}`;
                 <div>
                   <h3 className="text-2xl font-black">VirtuSphere AI Assistant</h3>
                   <p className="text-lg opacity-90 font-medium">{event.title}</p>
+                  {event.avatar_url && (
+                    <p className="text-sm opacity-75">Custom Avatar Active</p>
+                  )}
                 </div>
               </div>
               <button
