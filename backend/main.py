@@ -2,8 +2,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import load_model # pyright: ignore[reportMissingImports]
+from tensorflow.keras.preprocessing.sequence import pad_sequences # pyright: ignore[reportMissingImports]
 import joblib
 import numpy as np
 import nltk
@@ -17,7 +17,7 @@ load_dotenv()  # take environment variables from .env
 
 
 # Groq API
-from groq import Groq
+from groq import Groq # pyright: ignore[reportMissingImports]
 # from groq import ChatCompletionMessage
 
 nltk.download("punkt")
